@@ -1,44 +1,41 @@
-name: Preview HTML
+name: Create HTML Artifact and Comment on PR
 
 on:
-
   pull_request:
     types: [opened, synchronize, reopened]
 
 jobs:
-  generate-and-preview-html:
+  build-and-comment:
     runs-on: self-hosted
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v2
 
     - name: Generate HTML file
       run: |
-        echo "<html><body><h1>Hello, World!</h1></body></html>" > index.html
+        echo "<html><body><h1>Hello, World!</h1></body></html>" > report.html
 
     - name: Upload HTML artifact
       uses: actions/upload-artifact@v3
       with:
-        name: html-preview
-        path: index.html
+        name: report
+        path: report.html
 
-    - name: HTML Preview
-      id: html_preview
-      uses: pavi2410/html-preview-action@v2
-      with:
-        html_file: 'index.html'
+    - name: Get Artifact URL
+      id: artifact_url
+      run: |
+        ARTIFACT_URL=$(curl -s https://api.github.com/repos/${{ github.repository }}/actions/artifacts | jq -r '.artifacts[] | select(.name == "report") | .archive_download_url')
+        echo "::set-output name=url::$ARTIFACT_URL"
 
-    - name: Post PR comment with preview URL
+    - name: Post comment with artifact URL
       uses: actions/github-script@v6
       with:
-        github-token: ${{ secrets.TOKEN_GITHUB }}
         script: |
-          const previewUrl = `{{ steps.html_preview.outputs.url }}`;
-          const comment = `🚀 [Preview HTML File](${previewUrl})`;
-          github.rest.issues.createComment({
+          const artifactUrl = '${{ steps.artifact_url.outputs.url }}';
+          github.issues.createComment({
             owner: context.repo.owner,
             repo: context.repo.repo,
             issue_number: context.issue.number,
-            body: comment
-          });
+            body: `The HTML report is available [here](${artifactUrl}).`
+          })
