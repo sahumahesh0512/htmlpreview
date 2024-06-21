@@ -6,7 +6,7 @@ on:
 
 jobs:
   build-and-comment:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
     - name: Checkout code
@@ -31,8 +31,12 @@ jobs:
 
     - name: Post comment with artifact URL
       uses: actions/github-script@v6
+      env:
+        GH_PAT: ${{ secrets.TOKEN_GITHUB }}
       with:
         script: |
+          const { GitHub, context } = require('@actions/github');
+          const github = new GitHub(process.env.GH_PAT);
           github.rest.issues.createComment({
             owner: context.repo.owner,
             repo: context.repo.repo,
