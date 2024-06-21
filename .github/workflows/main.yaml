@@ -1,1 +1,60 @@
-name: CI Workflow
+name: Create HTML Artifact and Comment on PR
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  build-and-comment:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Generate HTML file
+      run: |
+        echo "<html><body><h1>Hello, World!</h1></body></html>" > report.html
+
+    - name: Upload HTML artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: html-report
+        path: report.html
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
+      with:
+        tag_name: v1.0  # Specify a tag name for the release
+        release_name: Release v1.0  # Specify a release name
+        body: Initial release  # Specify release notes if needed
+
+    - name: Get Release ID
+      id: get_release_id
+      run: echo "::set-output name=release_id::${{ steps.create_release.outputs.id }}"
+
+    - name: Upload Artifact to Release
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: report.html
+        asset_name: report.html
+        asset_content_type: text/html
+
+    - name: Post comment with download link
+      uses: actions/github-script@v6
+      with:
+        github-token: ${{ secrets.TOKEN_GITHUB }}
+        script: |
+          const artifactUrl = `https://github.com/${process.env.GITHUB_REPOSITORY}/releases/download/${{ steps.get_release_id.outputs.release_id }}/report.html`;
+          github.rest.issues.createComment({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: context.issue.number,
+            body: `The HTML report is available for download [here](${artifactUrl}).`
+          })
