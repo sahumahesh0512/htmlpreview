@@ -1,1 +1,45 @@
-name: CI Workflow
+name: Preview HTML
+
+on:
+  push:
+    branches:
+      - test
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  generate-and-preview-html:
+    runs-on: self-hosted
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Generate HTML file
+      run: |
+        echo "<html><body><h1>Hello, World!</h1></body></html>" > index.html
+
+    - name: Upload HTML artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: html-preview
+        path: index.html
+
+    - name: HTML Preview
+      id: html_preview
+      uses: pavi2410/html-preview-action@v2
+      with:
+        html_file: 'index.html'
+
+    - name: Post PR comment with preview URL
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const previewUrl = `${steps.html_preview.outputs.url}`;
+          const comment = `🚀 [Preview HTML File](${previewUrl})`;
+          github.issues.createComment({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: context.issue.number,
+            body: comment,
+          });
