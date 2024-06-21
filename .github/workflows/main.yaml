@@ -51,7 +51,7 @@ jobs:
       with:
         github-token: ${{ secrets.TOKEN_GITHUB }}
         script: |
-          const artifactUrl = `https://github.com/${process.env.GITHUB_REPOSITORY}/releases/download/${{ steps.get_release_id.outputs.release_id }}/report.html`;
+          const artifactUrl = `https://github.com/${process.env.GITHUB_REPOSITORY}/releases/download/v1.0/report.html`;
           github.rest.issues.createComment({
             owner: context.repo.owner,
             repo: context.repo.repo,
