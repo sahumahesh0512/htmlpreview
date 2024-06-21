@@ -35,11 +35,10 @@ jobs:
         GH_PAT: ${{ secrets.TOKEN_GITHUB }}
       with:
         script: |
-          const { GitHub, context } = require('@actions/github');
-          const github = new GitHub(process.env.GH_PAT);
-          github.rest.issues.createComment({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            issue_number: context.issue.number,
+          const github = require('@actions/github');
+          github.getOctokit(process.env.GH_PAT).rest.issues.createComment({
+            owner: github.context.repo.owner,
+            repo: github.context.repo.repo,
+            issue_number: github.context.issue.number,
             body: `The HTML report is available [here](${{ steps.artifact_url.outputs.url }}).`
           })
