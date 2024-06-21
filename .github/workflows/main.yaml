@@ -22,23 +22,20 @@ jobs:
         name: report
         path: report.html
 
-    - name: Get Artifact URL
-      id: artifact_url
-      run: |
-        ARTIFACT_ID=$(curl -s https://api.github.com/repos/${{ github.repository }}/actions/artifacts | jq -r '.artifacts[] | select(.name == "report") | .id')
-        ARTIFACT_URL="https://github.com/${{ github.repository }}/suites/${{ github.run_id }}/artifacts/${ARTIFACT_ID}"
-        echo "::set-output name=url::$ARTIFACT_URL"
-
-    - name: Post comment with artifact URL
-      uses: actions/github-script@v6
-      env:
-        GH_PAT: ${{ secrets.TOKEN_GITHUB }}
+    - name: HTML Preview
+      id: html_preview
+      uses: pavi2410/html-preview-action@v2
       with:
+        html_file: 'report.html'
+
+    - name: Post comment with preview URL
+      uses: actions/github-script@v6
+      with:
+        github-token: ${{ secrets.TOKEN_GITHUB }}
         script: |
-          const octokit = github.getOctokit(process.env.GH_PAT);
-          octokit.rest.issues.createComment({
-            owner: github.context.repo.owner,
-            repo: github.context.repo.repo,
-            issue_number: github.context.issue.number,
-            body: `The HTML report is available [here](${{ steps.artifact_url.outputs.url }}).`
-          });
+          github.rest.issues.createComment({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: context.issue.number,
+            body: `The HTML report is available for preview [here](${{ steps.html_preview.outputs.url }}).`
+          })
