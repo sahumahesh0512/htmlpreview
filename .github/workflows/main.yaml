@@ -1,6 +1,7 @@
 name: Preview HTML
 
 on:
+
   pull_request:
     types: [opened, synchronize, reopened]
 
@@ -33,7 +34,7 @@ jobs:
       with:
         github-token: ${{ secrets.TOKEN_GITHUB }}
         script: |
-          const previewUrl = steps.html_preview.outputs.url;
+          const previewUrl = `{{ steps.html_preview.outputs.url }}`;
           const comment = `🚀 [Preview HTML File](${previewUrl})`;
           github.rest.issues.createComment({
             owner: context.repo.owner,
