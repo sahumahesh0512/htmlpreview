@@ -29,15 +29,17 @@ jobs:
           name: html-artifact
           path: artifact
 
-      - name: Use HTML Preview
-        id: htmlpreview
-        uses: tj-actions/html-preview@v1
+      - name: Deploy to Netlify
+        uses: nwtgck/actions-netlify@v1.2.2
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}  # Add your Netlify site ID to GitHub secrets
         with:
-          path: artifact/artifact.html
+          publish-dir: artifact
 
       - name: Post comment on PR
         if: github.event_name == 'pull_request'
         uses: thollander/actions-comment-pull-request@v1
         with:
-          message: 'Preview HTML Artifact: ${{ steps.htmlpreview.outputs.preview-url }}'
-          GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
+          message: 'Preview HTML Artifact: ${{ steps.deploy-to-netlify.outputs.deploy-url }}'
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
