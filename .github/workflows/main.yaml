@@ -42,4 +42,4 @@ jobs:
         uses: thollander/actions-comment-pull-request@v1
         with:
           message: 'Preview HTML Artifact: ${{ steps.deploy-to-netlify.outputs.deploy-url }}'
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
