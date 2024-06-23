@@ -1,61 +1,43 @@
-name: Create HTML Artifact and Comment on PR
-
+name: Create and Preview HTML Artifact
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
+    branches:
+      - main
 
 jobs:
-  build-and-comment:
+  build:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-    - name: Generate HTML file
-      run: |
-        echo "<html><body><h1>Hello, World!</h1></body></html>" > report.html
+      - name: Create HTML file
+        run: |
+          echo "<html><body><h1>Hello, World!</h1></body></html>" > artifact.html
 
-    - name: Upload HTML artifact
-      uses: actions/upload-artifact@v2
-      with:
-        name: html-report
-        path: report.html
+      - name: Upload HTML artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: html-artifact
+          path: artifact.html
 
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
-      with:
-        tag_name: v1.0  # Specify a tag name for the release
-        release_name: Release v1.0  # Specify a release name
-        body: Initial release  # Specify release notes if needed
+      - name: Download HTML artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: html-artifact
+          path: artifact
 
-    - name: Get Release ID
-      id: get_release_id
-      run: echo "::set-output name=release_id::${{ steps.create_release.outputs.id }}"
+      - name: Use HTML Preview
+        id: htmlpreview
+        uses: tj-actions/html-preview@v1
+        with:
+          path: artifact/artifact.html
 
-    - name: Upload Artifact to Release
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: report.html
-        asset_name: report.html
-        asset_content_type: text/html
-
-    - name: Post comment with download link
-      uses: actions/github-script@v6
-      with:
-        github-token: ${{ secrets.TOKEN_GITHUB }}
-        script: |
-          const artifactUrl = `https://github.com/${process.env.GITHUB_REPOSITORY}/releases/download/v1.0/report.html`;
-          github.rest.issues.createComment({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            issue_number: context.issue.number,
-            body: `The HTML report is available for download [here](${artifactUrl}).`
-          })
+      - name: Post comment on PR
+        if: github.event_name == 'pull_request'
+        uses: thollander/actions-comment-pull-request@v1
+        with:
+          message: 'Preview HTML Artifact: ${{ steps.htmlpreview.outputs.preview-url }}'
+          GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
