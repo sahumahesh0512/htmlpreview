@@ -18,31 +18,32 @@ jobs:
           echo "<html><body><h1>Hello, World!</h1></body></html>" > artifact.html
 
       - name: Upload HTML artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v2
         with:
           name: html-artifact
           path: artifact.html
 
       - name: Download HTML artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v2
         with:
           name: html-artifact
           path: artifact
 
-      - name: Deploy to Netlify and capture output
-        id: netlify
-        run: |
-          npx netlify deploy --dir=artifact --site=$NETLIFY_SITE_ID --auth=$NETLIFY_AUTH_TOKEN --json > netlify.json
-
-      - name: Extract Netlify URL from JSON
-        id: extract-url
-        run: |
-          deploy_url=$(jq -r '.deploy_url' netlify.json)
-          echo "DEPLOY_URL=$deploy_url" >> $GITHUB_ENV
+      - name: Use HTML Preview
+        id: htmlpreview
+        uses: peaceiris/actions-html-preview@v1
+        with:
+          path: artifact.html
 
       - name: Post comment on PR
         if: github.event_name == 'pull_request'
-        uses: thollander/actions-comment-pull-request@v1
-        with:
-          message: 'Preview HTML Artifact: ${{ env.DEPLOY_URL }}'
+        run: |
+          PR_NUMBER=$(jq --raw-output .number "$GITHUB_EVENT_PATH")
+          COMMENT="Preview HTML Artifact: ${{ steps.htmlpreview.outputs.url }}"
+          echo "$COMMENT"
+          curl -X POST \
+            -H "Authorization: token $GITHUB_TOKEN" \
+            -d "{\"body\": \"$COMMENT\"}" \
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments"
+        env:
           GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
