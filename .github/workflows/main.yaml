@@ -17,32 +17,44 @@ jobs:
         run: |
           echo "<html><body><h1>Hello, World!</h1></body></html>" > artifact.html
 
-      - name: Upload HTML artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: html-artifact
-          path: artifact.html
+      - name: Deploy to GitHub Pages
+        run: |
+          mkdir -p docs
+          mv artifact.html docs/index.html
+        continue-on-error: true
 
-      - name: Download HTML artifact
-        uses: actions/download-artifact@v2
-        with:
-          name: html-artifact
-          path: artifact
+      - name: Configure Git
+        run: |
+          git config --global user.email "actions@github.com"
+          git config --global user.name "GitHub Actions"
 
-      - name: Use HTML Preview
-        id: htmlpreview
-        uses: peaceiris/actions-html-preview@v1
+      - name: Commit changes
+        run: |
+          git add docs/index.html
+          git commit -m "Deploy HTML artifact to GitHub Pages"
+        continue-on-error: true
+
+      - name: Push changes
+        uses: ad-m/github-push-action@master
         with:
-          path: artifact.html
+          github_token: ${{ secrets.TOKEN_GITHUB }}
+          branch: main
+        continue-on-error: true
+
+      - name: Extract GitHub Pages URL
+        id: gh-pages
+        run: |
+          echo "::set-output name=url::https://${GITHUB_REPOSITORY}.github.io/${GITHUB_REPOSITORY#*/}/"
+        continue-on-error: true
 
       - name: Post comment on PR
         if: github.event_name == 'pull_request'
         run: |
           PR_NUMBER=$(jq --raw-output .number "$GITHUB_EVENT_PATH")
-          COMMENT="Preview HTML Artifact: ${{ steps.htmlpreview.outputs.url }}"
+          COMMENT="Preview HTML Artifact: ${{ steps.gh-pages.outputs.url }}"
           echo "$COMMENT"
           curl -X POST \
-            -H "Authorization: token $GITHUB_TOKEN" \
+            -H "Authorization: token $TOKEN_GITHUB" \
             -d "{\"body\": \"$COMMENT\"}" \
             "https://api.github.com/repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments"
         env:
