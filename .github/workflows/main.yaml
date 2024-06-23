@@ -30,10 +30,11 @@ jobs:
           path: artifact
 
       - name: Deploy to Netlify
+        id: netlify
         uses: nwtgck/actions-netlify@v1.2.2
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}  # Add your Netlify site ID to GitHub secrets
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
         with:
           publish-dir: artifact
 
@@ -41,5 +42,5 @@ jobs:
         if: github.event_name == 'pull_request'
         uses: thollander/actions-comment-pull-request@v1
         with:
-          message: 'Preview HTML Artifact: ${{ steps.deploy-to-netlify.outputs.deploy-url }}'
+          message: 'Preview HTML Artifact: ${{ steps.netlify.outputs.deploy-url }}'
           GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
