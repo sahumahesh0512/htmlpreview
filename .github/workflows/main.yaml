@@ -44,7 +44,7 @@ jobs:
       - name: Extract GitHub Pages URL
         id: gh-pages
         run: |
-          echo "::set-output name=url::https://${GITHUB_REPOSITORY}.github.io/${GITHUB_REPOSITORY#*/}/"
+          echo "::set-output name=url::https://${GITHUB_REPOSITORY_OWNER}.github.io/${GITHUB_REPOSITORY#*/}/"
         continue-on-error: true
 
       - name: Post comment on PR
