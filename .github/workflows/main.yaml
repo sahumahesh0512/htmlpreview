@@ -37,7 +37,7 @@ jobs:
       - name: Push changes
         uses: ad-m/github-push-action@master
         with:
-          github_token: ${{ secrets.TOKEN_GITHUB }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: main
         continue-on-error: true
 
@@ -58,4 +58,4 @@ jobs:
             -d "{\"body\": \"$COMMENT\"}" \
             "https://api.github.com/repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments"
         env:
-          GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
+          TOKEN_GITHUB: ${{ secrets.TOKEN_GITHUB }}
