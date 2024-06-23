@@ -29,38 +29,20 @@ jobs:
           name: html-artifact
           path: artifact
 
-      - name: Deploy to Netlify
+      - name: Deploy to Netlify and capture output
         id: netlify
-        uses: nwtgck/actions-netlify@v1.2.2
-        env:
-          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
-        with:
-          publish-dir: artifact
+        run: |
+          npx netlify deploy --dir=artifact --site=$NETLIFY_SITE_ID --auth=$NETLIFY_AUTH_TOKEN --json > netlify.json
 
-      - name: Extract Netlify URL from logs
+      - name: Extract Netlify URL from JSON
         id: extract-url
         run: |
-          DEPLOY_LOG=$(cat $GITHUB_WORKSPACE/netlify.log)
-          DEPLOY_URL=$(echo "$DEPLOY_LOG" | grep -oP 'Website Draft URL:\s+\K\S+')
-          echo "DEPLOY_URL=$DEPLOY_URL" >> $GITHUB_ENV
+          deploy_url=$(jq -r '.deploy_url' netlify.json)
+          echo "DEPLOY_URL=$deploy_url" >> $GITHUB_ENV
 
       - name: Post comment on PR
         if: github.event_name == 'pull_request'
         uses: thollander/actions-comment-pull-request@v1
         with:
           message: 'Preview HTML Artifact: ${{ env.DEPLOY_URL }}'
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Deploy to Netlify and capture output
-        
-        run: |
-          npx netlify deploy --dir=artifact --site=$NETLIFY_SITE_ID --auth=$NETLIFY_AUTH_TOKEN --json | tee netlify.log
-
-      - name: Extract and comment Netlify deploy URL
-        run: |
-          url=$(cat netlify.log | jq -r '.deploy_url')
-          echo "Netlify deployment URL: $url"
-          gh pr comment ${{ github.event.pull_request.number }} --body "Preview HTML Artifact: $url"
-        env:
           GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
