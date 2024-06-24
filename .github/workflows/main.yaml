@@ -17,28 +17,28 @@ jobs:
 
     - name: Create HTML file
       run: |
-        mkdir -p public
-        echo "<html><body><h1>Hello, World!</h1></body></html>" > public/artifact.html
+        mkdir -p htmlpreview
+        echo "<html><body><h1>Hello, World!</h1></body></html>" > htmlpreview/artifact.html
 
     - name: Deploy to GitHub Pages
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       uses: peaceiris/actions-gh-pages@v3
       with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./public  # Directory containing the generated artifact.html file
+        github_token: ${{ secrets.TOKEN_GITHUB }}
+        publish_dir: ./htmlpreview  # Directory containing the generated artifact.html file
 
     - name: Post comment with GitHub Pages link
       if: github.event_name == 'pull_request'
       run: |
         echo "## GitHub Pages Site" > comment.md
-        echo "The site is available at: https://${{ github.repository_owner }}.github.io/${{ github.repository }}/artifact.html" >> comment.md
+        echo "The site is available at: https://${{ github.repository_owner }}.github.io/${{ github.repository }}/htmlpreview/artifact.html" >> comment.md
 
     - name: Comment on PR
       if: github.event_name == 'pull_request'
       uses: peter-evans/create-or-update-comment@v1
       with:
-        token: ${{ secrets.GITHUB_TOKEN }}
+        token: ${{ secrets.TOKEN_GITHUB }}
         repository: ${{ github.repository }}
         issue-number: ${{ github.event.pull_request.number }}
         body: |
-          The site is available at: https://${{ github.repository_owner }}.github.io/${{ github.repository }}/artifact.html
+          The site is available at: https://${{ github.repository_owner }}.github.io/${{ github.repository }}/htmlpreview/artifact.html
