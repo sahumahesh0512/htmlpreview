@@ -1,6 +1,9 @@
 name: Create and Preview HTML Artifact
 
 on:
+  push:
+    branches:
+      - test
   pull_request:
     branches:
       - main
