@@ -1,64 +1,43 @@
-name: Create and Preview HTML Artifact
+name: Deploy to GitHub Pages
 
 on:
   push:
     branches:
-      - test
-  pull_request:
-    branches:
       - main
+  pull_request:
+    types: [opened, synchronize, reopened]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+    - name: Checkout code
+      uses: actions/checkout@v2
 
-      - name: Create HTML file
-        run: |
-          echo "<html><body><h1>Hello, World!</h1></body></html>" > artifact.html
+    - name: Create HTML file
+      run: |
+        echo "<html><body><h1>Hello, World!</h1></body></html>" > public/artifact.html
 
-      - name: Deploy to GitHub Pages
-        run: |
-          mkdir -p docs
-          mv artifact.html docs/index.html
-        continue-on-error: true
+    - name: Deploy to GitHub Pages
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.TOKEN_GITHUB }}
+        publish_dir: ./public  # Directory containing the generated artifact.html file
 
-      - name: Configure Git
-        run: |
-          git config --global user.email "actions@github.com"
-          git config --global user.name "GitHub Actions"
+    - name: Post comment with GitHub Pages link
+      if: github.event_name == 'pull_request'
+      run: |
+        echo "## GitHub Pages Site" > comment.md
+        echo "The site is available at: https://${{ github.repository_owner }}.github.io/${{ github.repository }}/artifact.html" >> comment.md
 
-      - name: Commit changes
-        run: |
-          git add docs/index.html
-          git commit -m "Deploy HTML artifact to GitHub Pages"
-        continue-on-error: true
-
-      - name: Push changes
-        uses: ad-m/github-push-action@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: main
-        continue-on-error: true
-
-      - name: Extract GitHub Pages URL
-        id: gh-pages
-        run: |
-          echo "::set-output name=url::https://${GITHUB_REPOSITORY_OWNER}.github.io/${GITHUB_REPOSITORY#*/}/"
-        continue-on-error: true
-
-      - name: Post comment on PR
-        if: github.event_name == 'pull_request'
-        run: |
-          PR_NUMBER=$(jq --raw-output .number "$GITHUB_EVENT_PATH")
-          COMMENT="Preview HTML Artifact: ${{ steps.gh-pages.outputs.url }}"
-          echo "$COMMENT"
-          curl -X POST \
-            -H "Authorization: token $TOKEN_GITHUB" \
-            -d "{\"body\": \"$COMMENT\"}" \
-            "https://api.github.com/repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments"
-        env:
-          TOKEN_GITHUB: ${{ secrets.TOKEN_GITHUB }}
+    - name: Comment on PR
+      if: github.event_name == 'pull_request'
+      uses: peter-evans/create-or-update-comment@v1
+      with:
+        token: ${{ secrets.TOKEN_GITHUB }}
+        repository: ${{ github.repository }}
+        issue-number: ${{ github.event.pull_request.number }}
+        body: |
+          The site is available at: https://${{ github.repository_owner }}.github.io/${{ github.repository }}/artifact.html
