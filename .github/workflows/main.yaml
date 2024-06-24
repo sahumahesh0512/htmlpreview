@@ -17,13 +17,14 @@ jobs:
 
     - name: Create HTML file
       run: |
+        mkdir -p public
         echo "<html><body><h1>Hello, World!</h1></body></html>" > public/artifact.html
 
     - name: Deploy to GitHub Pages
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       uses: peaceiris/actions-gh-pages@v3
       with:
-        github_token: ${{ secrets.TOKEN_GITHUB }}
+        github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: ./public  # Directory containing the generated artifact.html file
 
     - name: Post comment with GitHub Pages link
@@ -36,7 +37,7 @@ jobs:
       if: github.event_name == 'pull_request'
       uses: peter-evans/create-or-update-comment@v1
       with:
-        token: ${{ secrets.TOKEN_GITHUB }}
+        token: ${{ secrets.GITHUB_TOKEN }}
         repository: ${{ github.repository }}
         issue-number: ${{ github.event.pull_request.number }}
         body: |
