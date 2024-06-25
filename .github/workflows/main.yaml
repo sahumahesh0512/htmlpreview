@@ -1,11 +1,12 @@
-name: Deploy to GitHub Pages
+name: Supercharging GitHub Actions with Job Summaries
 
 on:
   push:
     branches:
       - main
   pull_request:
-    types: [opened, synchronize, reopened]
+    branches:
+      - main
 
 jobs:
   build:
@@ -15,30 +16,5 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    - name: Create HTML file
-      run: |
-        mkdir -p htmlpreview
-        echo "<html><body><h1>Hello, World!</h1></body></html>" > htmlpreview/artifact.html
-
-    - name: Deploy to GitHub Pages
-      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-      uses: peaceiris/actions-gh-pages@v3
-      with:
-        github_token: ${{ secrets.TOKEN_GITHUB }}
-        publish_dir: ./htmlpreview  # Directory containing the generated artifact.html file
-
-    - name: Post comment with GitHub Pages link
-      if: github.event_name == 'pull_request'
-      run: |
-        echo "## GitHub Pages Site" > comment.md
-        echo "The site is available at: https://${{ github.repository_owner }}.github.io/${{ github.repository }}/htmlpreview/artifact.html" >> comment.md
-
-    - name: Comment on PR
-      if: github.event_name == 'pull_request'
-      uses: peter-evans/create-or-update-comment@v1
-      with:
-        token: ${{ secrets.TOKEN_GITHUB }}
-        repository: ${{ github.repository }}
-        issue-number: ${{ github.event.pull_request.number }}
-        body: |
-          The site is available at: https://${{ github.repository_owner }}.github.io/${{ github.repository }}/htmlpreview/artifact.html
+    - name: Adding Markdown
+      run: echo '### Hello world! 🚀' >> $GITHUB_STEP_SUMMARY
