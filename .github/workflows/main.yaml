@@ -8,13 +8,26 @@ jobs:
     name: Summary
     runs-on: self-hosted
     steps:
-      - name: Adding markdown
-        run: echo '### Hello world! 🚀' >> $GITHUB_STEP_SUMMARY
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-      - name: Generate a table of test result
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
+
+      - name: Install dependencies
         run: |
-          echo "| Test Result :test_tube: | Passed :green_circle: | Failed :x: | Skipped | Time Duration :alarm_clock: |" >> $GITHUB_STEP_SUMMARY
-          echo "| ------------| ------- | ------------- | ----------- | ------------ |" >> $GITHUB_STEP_SUMMARY
-          echo "| :green_circle: Pass | 122 | 0 | 3 | 12m 3s |" >> $GITHUB_STEP_SUMMARY
-          echo "| :x: Failed | 121 | 2 | 3 | 10m 3s |" >> $GITHUB_STEP_SUMMARY
-          echo "| :green_circle: Pass | 4 | 12 | 3 | 9m 4s |" >> $GITHUB_STEP_SUMMARY
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run tests
+        run: |
+          pytest --json-report --json-report-file=test_report.json
+
+      - name: Generate test summary
+        run: python generate_summary.py
+
+      - name: Append summary to GitHub Actions summary
+        run: cat test_summary.md >> $GITHUB_STEP_SUMMARY
+
