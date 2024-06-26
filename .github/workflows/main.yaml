@@ -22,6 +22,8 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run tests
+        env:
+          PYTHONPATH: ./src  # Add src to PYTHONPATH
         run: |
           pytest --json-report --json-report-file=test_report.json
 
@@ -30,4 +32,3 @@ jobs:
 
       - name: Append summary to GitHub Actions summary
         run: cat test_summary.md >> $GITHUB_STEP_SUMMARY
-
