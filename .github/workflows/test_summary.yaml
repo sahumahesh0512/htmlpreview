@@ -32,7 +32,7 @@ jobs:
       # Run tests and generate HTML report
       - name: Run tests
         run: |
-          pytest --html=test_report.html
+          pytest tests --html=test_report.html
 
       # Parse HTML report and generate summary
       - name: Parse HTML report and generate summary
