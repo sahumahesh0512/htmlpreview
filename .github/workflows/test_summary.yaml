@@ -27,12 +27,11 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install beautifulsoup4
+          pip install pytest pytest-html beautifulsoup4
 
       # Run tests and generate HTML report
       - name: Run tests
         run: |
-          # Replace this with your actual test command that generates an HTML report
           pytest --html=test_report.html
 
       # Parse HTML report and generate summary
@@ -46,3 +45,4 @@ jobs:
         with:
           name: test-report
           path: test_report.html
+
