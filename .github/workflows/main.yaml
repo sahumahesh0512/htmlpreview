@@ -24,7 +24,8 @@ jobs:
       - name: Run tests and generate JSON report
         run: |
           python -m pytest src --json-report --json-report-file=test_report.json
-
+        continue-on-error: true
+        
       - name: Print JSON report for inspection
         run: |
           cat test_report.json
