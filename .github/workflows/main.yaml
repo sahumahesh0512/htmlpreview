@@ -26,11 +26,11 @@ jobs:
 
       - name: Run tests and capture results
         run: |
-          python -m pytest tests --cov=. --cov-report xml:coverage.xml --junitxml=test/results/TEST-results.xml
+          python -m pytest src --cov=. --cov-report xml:coverage.xml --junitxml=test/results/TEST-results.xml
 
       - name: Run tests and generate JSON report
         run: |
-          python -m pytest --json-report --json-report-file=test_report.json
+          python -m pytest src --json-report --json-report-file=test_report.json
 
       - name: Generate test summary
         run: python generate_summary.py
