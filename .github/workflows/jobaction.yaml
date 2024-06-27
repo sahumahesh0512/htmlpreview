@@ -21,10 +21,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run tests and generate JSON report
-        run: |
-          test_report.json
-        continue-on-error: true
         
       - name: Print JSON report for inspection
         run: |
