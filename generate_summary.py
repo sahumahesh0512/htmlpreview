@@ -1,26 +1,22 @@
 import json
 
-# Load the test report
-with open('test_report.json', 'r') as f:
-    report = json.load(f)
+# Load the JSON report
+with open('test_report.json') as f:
+    data = json.load(f)
 
-# Initialize table
-table_header = "| Test Result :test_tube: | Passed :green_circle: | Failed :x: | Skipped | Time Duration :alarm_clock: |\n"
-table_header += "| ---------------------- | ------- | ------- | ------- | ---------------- |\n"
-table_rows = ""
+# Extract summary information
+summary = data.get('summary', {})
+num_passed = summary.get('passed', 0)
+num_failed = summary.get('failed', 0)
+num_skipped = summary.get('skipped', 0)
+duration = summary.get('duration', 0)
 
-# Extract results
-summary = report['summary']
-num_tests = summary['total']
-num_passed = summary['passed']
-num_failed = summary['failed']
-num_skipped = summary['skipped']
-duration = summary['duration']
+# Convert duration to minutes and seconds
+minutes, seconds = divmod(duration, 60)
 
-# Create table rows
-row = f"| Total | {num_passed} | {num_failed} | {num_skipped} | {duration:.2f}s |\n"
-table_rows += row
-
-# Write the markdown table to a file
+# Generate markdown summary
 with open('test_summary.md', 'w') as f:
-    f.write(table_header + table_rows)
+    f.write('### Test Results Summary 🚀\n')
+    f.write(f'| Test Result :test_tube: | Passed :green_circle: | Failed :x: | Skipped :heavy_minus_sign: | Time Duration :alarm_clock: |\n')
+    f.write(f'| ---------------------- | ------- | ----------- | ----------- | ------------- |\n')
+    f.write(f'| Summary                | {num_passed}      | {num_failed}           | {num_skipped}           | {minutes}m {seconds}s       |\n')
