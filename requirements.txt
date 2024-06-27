@@ -1,4 +1,4 @@
 pytest
 coverage
 junit2html
-
+pytest-cov
