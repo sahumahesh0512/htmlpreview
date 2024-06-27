@@ -1,7 +1,10 @@
 name: Job Action Summary
 
+
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - main
 
 jobs:
   Summary:
@@ -21,11 +24,13 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run tests
-        env:
-          PYTHONPATH: ${{ github.workspace }}/src
+      - name: Run tests and capture results
         run: |
-          pytest --json-report --json-report-file=test_report.json
+          python -m pytest tests --cov=. --cov-report xml:coverage.xml --junitxml=test/results/TEST-results.xml
+
+      - name: Run tests and generate JSON report
+        run: |
+          python -m pytest --json-report --json-report-file=test_report.json
 
       - name: Generate test summary
         run: python generate_summary.py
