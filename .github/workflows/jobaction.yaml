@@ -1,14 +1,37 @@
-name: Generate Test Summary
+name: Job Action Summary
 
 on:
   workflow_dispatch:
 
 jobs:
-  generate-summary:
-    runs-on: ubuntu-latest
+  Summary:
+    name: Summary
+    runs-on: self-hosted
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Run script to generate summary
-        run: python generate_summary.py test_report.json >> $GITHUB_STEP_SUMMARY
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run tests and generate JSON report
+        run: |
+          test_report.json
+        continue-on-error: true
+        
+      - name: Print JSON report for inspection
+        run: |
+          cat test_report.json
+
+      - name: Generate test summary
+        run: python generate_summary.py
+
+      - name: Append summary to GitHub Actions summary
+        run: cat test_summary.md >> $GITHUB_STEP_SUMMARY
