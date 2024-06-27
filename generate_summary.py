@@ -19,7 +19,6 @@ seconds = round(seconds, 2)  # Round seconds to 2 decimal places for better read
 
 # Generate markdown summary
 with open('test_summary.md', 'w') as f:
-    f.write('### Test Results Summary 🚀\n')
-    f.write(f'| Test Result :test_tube: | Passed :green_circle: | Failed :x: | Skipped :heavy_minus_sign: | Time Duration :alarm_clock: |\n')
-    f.write(f'| ---------------------- | ------- | ----------- | ----------- | ------------- |\n')
+    f.write('| Test Result :test_tube: | Passed :green_circle: | Failed :x: | Skipped :heavy_minus_sign: | Time Duration :alarm_clock: |\n')
+    f.write('| ---------------------- | ------- | ----------- | ----------- | ------------- |\n')
     f.write(f'| Summary                | {num_passed}      | {num_failed}           | {num_skipped}           | {int(minutes)}m {seconds}s       |\n')
