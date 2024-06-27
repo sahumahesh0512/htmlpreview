@@ -1,4 +1,4 @@
 pytest
-pytest-json-report
-pytest-cov
+coverage
+junit2html
 
